@@ -7,13 +7,13 @@ output: html_document
 
 ```{r setup, include=FALSE, echo=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(caret)
 library(randomForest)
 library(rpart)
 library(rpart.plot)
-library(rattle)
-library(knitr)
-library(caret)
 library(corrplot)
+library(rattle)
 ```
 
 # 1 Executive Summary
