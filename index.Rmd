@@ -1,5 +1,5 @@
 ---
-title: "Weight lifting prediction"
+title: "Coursera Practical machine learning assignment - Weight lifting prediction"
 author: "Claudio Lande"
 date: "17/10/2019"
 output: html_document
