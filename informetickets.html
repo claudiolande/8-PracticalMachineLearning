@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head><title>Resultado de los test de la versión</title>
+	<meta charset="utf-8">
+</head>
+<style type="text/css">
+table {
+  font-family: "Helvetica", "Lucida Sans", "Lucida Sans Unicode", "Luxi Sans", Tahoma, sans-serif;
+  box-shadow: 1px 1px 10px rgba(0,0,0,0.5);
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+table {
+  margin: auto;
+}
+table, td, th {
+  padding: 7px;
+  text-align: center;
+  border: 1px solid rgb(8,48,107);
+}
+td {
+  text-align: left;
+}
+
+th {
+  background-color: rgb(8,81,156);
+  color: white;
+}
+</style>
+<body>
+<script>
+
+// Global variables
+var jdata; //contains JSON data
+var test;
+
+// Loads JSON file (synchronously) with the test execution results
+// For instance: https://jira.absapp.net/rest/raven/1.0/testruns?testExecKey=TEST-457&includeTestFields=summary,customfield_12404,customfield_12420
+function loadJSON(callback) {   
+    var xobj = new XMLHttpRequest();
+    xobj.overrideMimeType("application/json");
+    xobj.open('GET', './InformePruebas.json', false); // Load synchronously
+//    xobj.open('GET', 'https://jira.absapp.net/rest/raven/1.0/testruns?testExecKey=TEST-457&includeTestFields=summary,customfield_12404,customfield_12420', false); // Load synchronously
+    xobj.onreadystatechange = function () {
+          if (xobj.readyState == 4 && xobj.status == "200") {
+            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+            callback(xobj.responseText);
+          }
+    };
+    xobj.send(null);  
+}
+ 
+function init() {
+ loadJSON(function(response) {
+  // Parse JSON string into object
+    jdata = JSON.parse(response);
+ });
+}
+ 
+function testResultColor(status) {
+	var statusColor;
+	
+	switch(status) {
+		case "FAIL":
+			statusColor = "red"
+			break;
+		case "EXECUTING":
+			statusColor = "orange"
+			break;
+		case "PASS":
+			statusColor = "green"
+			break;
+		default:
+			statusColor = "black"
+	} 
+	return statusColor
+}
+
+function innerStepsTable() {
+	var innerTable;
+	var step;
+	var stepStatus;
+	var statusColor;
+
+	innerTable = "<table style=width:100%>" + 
+		"<tr><th style=width:40%>Step</th><th style=width:50%>Resultado esperado</th><th style=width:10%>Estado</th></tr>";
+
+	step = 0
+	do {
+		if(jdata[test].steps != null) {
+			stepStatus = jdata[test].steps[step].status
+		}
+		else {
+			stepStatus = ""
+		}
+		
+	
+
+		innerTable = innerTable +
+			"<tr>" +
+				"<td>" + jdata[test].testIssueFields.customfield_12404.steps[step].step   + "</td>" +
+				"<td>" + jdata[test].testIssueFields.customfield_12404.steps[step].result + "</td>" +
+				"<td style=color:" + testResultColor(stepStatus) + ">" + stepStatus + 
+				"</td>" +
+			"</tr>";
+		step++;
+	} while(jdata[test].testIssueFields.customfield_12404.steps[step] != null)
+					
+	innerTable = innerTable + "</table>"
+	
+	return innerTable;
+} 
+ 
+ 
+function outerTestTable() {
+	test = 0;
+
+	html = "<table><tr><th>Id</th><th>Summary</th><th>Status</th><th>Step</th></tr>"
+
+	do {
+		html = html + 
+			"<tr>" + 
+				"<td>" + (test+1) + "</td>" +
+				"<td>" + jdata[test].testIssueFields.summary + "</td>" +
+				"<td style=color:" + testResultColor(jdata[test].status) + ">" + jdata[test].status + "</td>" +
+				"<td>" + 
+					innerStepsTable() +
+				"</td>" +
+			"</tr>";
+
+		test++;
+	} while(jdata[test] != null)
+
+	html = html + "</table>"
+	
+	return html;
+}
+
+init();
+document.write(outerTestTable());
+
+</script>
+</body>
+</html>
